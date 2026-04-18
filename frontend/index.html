@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager</title>
+</head>
+<body>
+
+<h2>Register</h2>
+<input id="regEmail" placeholder="Email">
+<input id="regPassword" placeholder="Password" type="password">
+<button onclick="register()">Register</button>
+
+<h2>Login</h2>
+<input id="logEmail" placeholder="Email">
+<input id="logPassword" placeholder="Password" type="password">
+<button onclick="login()">Login</button>
+
+<h2>Create Task</h2>
+<input id="title" placeholder="Title">
+<input id="desc" placeholder="Description">
+<button onclick="createTask()">Add Task</button>
+
+<h2>Tasks</h2>
+<ul id="taskList"></ul>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+function register() {
+    fetch(API + "/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            email: regEmail.value,
+            password: regPassword.value
+        })
+    }).then(res => res.json()).then(data => alert("Registered"));
+}
+
+function login() {
+    fetch(API + "/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            email: logEmail.value,
+            password: logPassword.value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        localStorage.setItem("token", data.access_token);
+        alert("Logged in");
+        loadTasks();
+    });
+}
+
+function createTask() {
+    fetch(API + "/tasks/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify({
+            title: title.value,
+            description: desc.value
+        })
+    }).then(() => loadTasks());
+}
+
+function loadTasks() {
+    fetch(API + "/tasks/", {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        taskList.innerHTML = "";
+        data.forEach(task => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                ${task.title} - ${task.completed}
+                <button onclick="complete(${task.id})">Done</button>
+                <button onclick="removeTask(${task.id})">Delete</button>
+            `;
+            taskList.appendChild(li);
+        });
+    });
+}
+
+function complete(id) {
+    fetch(API + "/tasks/" + id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify({ completed: true })
+    }).then(() => loadTasks());
+}
+
+function removeTask(id) {
+    fetch(API + "/tasks/" + id, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    }).then(() => loadTasks());
+}
+</script>
+
+</body>
+</html>
