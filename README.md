@@ -43,16 +43,7 @@ Open in browser:
 
 API Docs: http://127.0.0.1:8000/docs
 Frontend: open frontend/index.html
-Project Structure
-app/
-  ├── main.py
-  ├── models/
-  ├── routes/
-  ├── schemas/
-  ├── utils/
 
-frontend/
-  └── index.html
 What I Learned
 
 While building this project, I understood:
